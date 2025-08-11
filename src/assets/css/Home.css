@@ -1,0 +1,225 @@
+/* General Body Styles */
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: #f7f7f7;
+}
+
+/* Grid for Products */
+.products-grid {
+  margin-top: 64px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  justify-content: center; /* Center grid items horizontally */
+  align-items: flex-start; /* Align grid items to the start vertically */
+}
+
+/* Product Card Styling */
+.card-item {
+  width: 250px;
+  height: 360px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #fff; /* Default background for available products */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.card-item[style*="background-color: rgb(204, 204, 204)"] { /* Specific style for out of stock */
+  background-color: #ccc;
+  opacity: 0.7;
+}
+
+.card-item.out-of-stock {
+  background-color: #ccc;
+  opacity: 0.7;
+}
+
+.card-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.card-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  padding: 5px;
+  margin: 0;
+  border-radius: 10px 10px 0 0; /* Top rounded corners */
+}
+
+.card-body-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.card-title-text {
+  margin: 0 0 10px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.card-brand-text {
+  font-style: italic;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.hr-line {
+  margin: 10px 0;
+  border: 0;
+  border-top: 1px solid #eee;
+}
+
+.home-cart-price {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.card-price-text {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #28a745; /* Green for price */
+  display: flex;
+  align-items: center;
+}
+
+.card-price-text .bi-currency-rupee {
+  margin-right: 5px;
+}
+
+/* Button Styling (btn-hover color-9 - example provided, adjust as needed) */
+.btn-hover {
+  width: 100%;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  height: 40px;
+  text-align:center;
+  border: none;
+  background-size: 300% 100%;
+  border-radius: 5px;
+  transition: all .4s ease-in-out;
+  margin-top: 10px; /* Space above button */
+}
+
+.btn-hover:disabled {
+  background-image: linear-gradient(to right, #b0b0b0, #909090, #b0b0b0, #909090);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.btn-hover:focus {
+  outline: none;
+}
+
+.btn-hover.color-9 {
+  background-image: linear-gradient(to right, #29323c, #485563, #29323c, #485563);
+  box-shadow: 0 4px 15px 0 rgba(45, 54, 65, 0.75);
+}
+
+.btn-hover.color-9:hover {
+  background-position: 100% 0;
+  -o-transition: all .4s ease-in-out;
+  -webkit-transition: all .4s ease-in-out;
+  transition: all .4s ease-in-out;
+}
+
+/* Message Styles */
+.text-center {
+  text-align: center;
+}
+
+.error-container {
+  padding: 18rem 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: #dc3545; /* Red for error messages */
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.error-icon {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 20px;
+}
+
+.no-products-message {
+  padding: 50px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  color: #555;
+  width: 100%; /* Ensure it takes full width for centering */
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    padding: 10px;
+  }
+
+  .card-item {
+    width: 100%; /* Make cards take full width on smaller screens */
+    max-width: 300px; /* Optional: limit max width even if full width */
+    margin: 0 auto; /* Center individual cards */
+  }
+
+  .error-container {
+    padding: 10rem 20px;
+  }
+
+  .error-icon {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .products-grid {
+    grid-template-columns: 1fr; /* Single column layout for very small screens */
+    gap: 15px;
+  }
+
+  .card-title-text {
+    font-size: 1.1rem;
+  }
+
+  .card-price-text {
+    font-size: 1rem;
+  }
+
+  .btn-hover {
+    font-size: 14px;
+    height: 35px;
+  }
+}

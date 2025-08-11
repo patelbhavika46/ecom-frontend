@@ -1,172 +1,162 @@
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useContext, useEffect } from "react";
-import { useState } from "react";
-import AppContext from "../Context/Context";
-import axios from "../axios";
-import UpdateProduct from "./UpdateProduct";
+import AppContext from "../Context/Context"; // Assuming Context.js is in the same directory
+import axios from "../axios"; // Assuming axios config is in the same directory
+import '../assets/css/Product.css'; // Import the CSS file
+
 const Product = () => {
   const { id } = useParams();
-  const { data, addToCart, removeFromCart, cart, refreshData } =
-    useContext(AppContext);
+  const { data, addToCart, removeFromCart, refreshData } = useContext(AppContext);
   const [product, setProduct] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:8080/api/product/${id}`
-        );
-        setProduct(response.data);
-        if (response.data.imageName) {
-          fetchImage();
+  // Function to fetch product details and its image
+  const fetchProductDetails = useCallback(async () => {
+    try {
+      const productResponse = await axios.get(`/product/${id}`);
+      setProduct(productResponse.data);
+
+      if (productResponse.data.imageName) {
+        try {
+          const imageResponse = await axios.get(
+            `/product/${id}/image`,
+            { responseType: "blob" }
+          );
+          // Create object URL for the image blob
+          setImageUrl(URL.createObjectURL(imageResponse.data));
+        } catch (imageError) {
+          console.error("Error fetching image for product:", productResponse.data.id, imageError);
+          // Fallback to a placeholder image URL on error
+          setImageUrl("https://placehold.co/400x400/E0E0E0/808080?text=No+Image");
         }
-      } catch (error) {
-        console.error("Error fetching product:", error);
+      } else {
+        // If no image name, set a placeholder directly
+        setImageUrl("https://placehold.co/400x400/E0E0E0/808080?text=No+Image");
+      }
+    } catch (productError) {
+      console.error("Error fetching product details:", productError);
+      // Handle product not found or other API errors (e.g., navigate to a 404 page)
+      setProduct(null); // Explicitly set product to null if fetch fails
+      navigate('/not-found'); // Example: navigate to a not-found page
+    }
+  }, [id, navigate]);
+
+  useEffect(() => {
+    fetchProductDetails();
+
+    // Cleanup function to revoke the object URL when component unmounts or image changes
+    return () => {
+      if (imageUrl && imageUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(imageUrl);
       }
     };
+  }, [fetchProductDetails, imageUrl]); // Depend on fetchProductDetails and imageUrl for cleanup
 
-    const fetchImage = async () => {
-      const response = await axios.get(
-        `http://localhost:8080/api/product/${id}/image`,
-        { responseType: "blob" }
-      );
-      setImageUrl(URL.createObjectURL(response.data));
-    };
-
-    fetchProduct();
-  }, [id]);
-
-  const deleteProduct = async () => {
-    try {
-      await axios.delete(`http://localhost:8080/api/product/${id}`);
-      removeFromCart(id);
-      console.log("Product deleted successfully");
-      alert("Product deleted successfully");
-      refreshData();
-      navigate("/");
-    } catch (error) {
-      console.error("Error deleting product:", error);
+  // Handles product deletion
+  const handleDeleteProduct = async () => {
+    // In a real application, you'd add a confirmation modal here instead of `alert`
+    if (window.confirm("Are you sure you want to delete this product?")) { // Using confirm for demo purposes
+      try {
+        await axios.delete(`/product/${id}`);
+        removeFromCart(id); // Remove from cart context
+        refreshData(); // Refresh global product data
+        navigate("/"); // Navigate back to the home page
+      } catch (error) {
+        console.error("Error deleting product:", error);
+        // Display user-friendly error message
+      }
     }
   };
 
+  // Handles navigation to the update product page
   const handleEditClick = () => {
     navigate(`/product/update/${id}`);
   };
 
-  const handlAddToCart = () => {
-    addToCart(product);
-    alert("Product added to cart");
+  // Handles adding the product to the cart
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart(product);
+      // In a real application, display a success toast/notification
+      console.log("Product added to cart!");
+    }
   };
+
+  // Display loading state
   if (!product) {
     return (
-      <h2 className="text-center" style={{ padding: "10rem" }}>
-        Loading...
-      </h2>
+      <div className="product-loading">
+        <h2>Loading product details...</h2>
+      </div>
     );
   }
+
+  // Destructure product properties for cleaner JSX
+  const { name, brand, category, desc, price, available, quantity, releaseDate } = product;
+  const formattedReleaseDate = new Date(releaseDate).toLocaleDateString();
+
   return (
-    <>
-      <div className="containers" style={{ display: "flex" }}>
-        <img
-          className="left-column-img"
-          src={imageUrl}
-          alt={product.imageName}
-          style={{ width: "50%", height: "auto" }}
-        />
+    <div className="product-container">
+      <img
+        className="product-image"
+        src={imageUrl}
+        alt={name}
+      />
 
-        <div className="right-column" style={{ width: "50%" }}>
-          <div className="product-description">
-            <div style={{display:'flex',justifyContent:'space-between' }}>
-            <span style={{ fontSize: "1.2rem", fontWeight: 'lighter' }}>
-              {product.category}
-            </span>
-            <p className="release-date" style={{ marginBottom: "2rem" }}>
-              
-              <h6>Listed : <span> <i> {new Date(product.releaseDate).toLocaleDateString()}</i></span></h6>
-              {/* <i> {new Date(product.releaseDate).toLocaleDateString()}</i> */}
-            </p>
-            </div>
-            
-           
-            <h1 style={{ fontSize: "2rem", marginBottom: "0.5rem",textTransform: 'capitalize', letterSpacing:'1px' }}>
-              {product.name}
-            </h1>
-            <i style={{ marginBottom: "3rem" }}>{product.brand}</i>
-            <p style={{fontWeight:'bold',fontSize:'1rem',margin:'10px 0px 0px'}}>PRODUCT DESCRIPTION :</p>
-            <p style={{ marginBottom: "1rem" }}>{product.description}</p>
-          </div>
+      <div className="product-details-column">
+        <div className="product-header">
+          <span className="product-category">
+            {category}
+          </span>
+          <p className="product-release-date">
+            <h6>Listed : <span><i>{formattedReleaseDate}</i></span></h6>
+          </p>
+        </div>
+        
+        <h1 className="product-name">
+          {name}
+        </h1>
+        <i className="product-brand">{brand}</i>
+        <p className="product-description-label">PRODUCT DESCRIPTION :</p>
+        <p className="product-description-text">{desc}</p>
 
-          <div className="product-price">
-            <span style={{ fontSize: "2rem", fontWeight: "bold" }}>
-              {"$" + product.price}
-            </span>
-            <button
-              className={`cart-btn ${
-                !product.productAvailable ? "disabled-btn" : ""
-              }`}
-              onClick={handlAddToCart}
-              disabled={!product.productAvailable}
-              style={{
-                padding: "1rem 2rem",
-                fontSize: "1rem",
-                backgroundColor: "#007bff",
-                color: "white",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-                marginBottom: "1rem",
-              }}
-            >
-              {product.productAvailable ? "Add to cart" : "Out of Stock"}
-            </button>
-            <h6 style={{ marginBottom: "1rem" }}>
-              Stock Available :{" "}
-              <i style={{ color: "green", fontWeight: "bold" }}>
-                {product.stockQuantity}
-              </i>
-            </h6>
-          
-          </div>
-          <div className="update-button" style={{ display: "flex", gap: "1rem" }}>
-            <button
-              className="btn btn-primary"
-              type="button"
-              onClick={handleEditClick}
-              style={{
-                padding: "1rem 2rem",
-                fontSize: "1rem",
-                backgroundColor: "#007bff",
-                color: "white",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-              }}
-            >
-              Update
-            </button>
-            {/* <UpdateProduct product={product} onUpdate={handleUpdate} /> */}
-            <button
-              className="btn btn-primary"
-              type="button"
-              onClick={deleteProduct}
-              style={{
-                padding: "1rem 2rem",
-                fontSize: "1rem",
-                backgroundColor: "#dc3545",
-                color: "white",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-              }}
-            >
-              Delete
-            </button>
-          </div>
+        <div className="product-price-section">
+          <span className="product-price-value">
+            {"$" + price}
+          </span>
+          <button
+            className={`add-to-cart-btn ${!available ? "disabled-btn" : ""}`}
+            onClick={handleAddToCart}
+            disabled={!available}
+          >
+            {available ? "Add to cart" : "Out of Stock"}
+          </button>
+          <h6 className="product-stock-quantity">
+            Stock Available :{" "}
+            <i className="stock-count">
+              {quantity}
+            </i>
+          </h6>
+        </div>
+        <div className="product-actions">
+          <button
+            className="btn-action primary-action"
+            type="button"
+            onClick={handleEditClick}
+          >
+            Update
+          </button>
+          <button
+            className="btn-action danger-action"
+            type="button"
+            onClick={handleDeleteProduct}
+          >
+            Delete
+          </button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
