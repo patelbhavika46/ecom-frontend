@@ -9,31 +9,31 @@ const UpdateProduct = () => {
   const [updateProduct, setUpdateProduct] = useState({
     id: null,
     name: "",
-    description: "",
+    desc: "",
     brand: "",
     price: "",
     category: "",
     releaseDate: "",
-    productAvailable: false,
-    stockQuantity: "",
+    isAvailable: false,
+    quantity: "",
   });
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/product/${id}`
+          `http://localhost:8080/api/products/${id}`
         );
 
-        setProduct(response.data);
+        setProduct(response.data.data);
       
         const responseImage = await axios.get(
-          `http://localhost:8080/api/product/${id}/image`,
+          `http://localhost:8080/api/products/${id}/image`,
           { responseType: "blob" }
         );
        const imageFile = await converUrlToFile(responseImage.data,response.data.imageName)
         setImage(imageFile);     
-        setUpdateProduct(response.data);
+        setUpdateProduct(response.data.data);
       } catch (error) {
         console.error("Error fetching product:", error);
       }
@@ -60,14 +60,14 @@ const UpdateProduct = () => {
     const updatedProduct = new FormData();
     updatedProduct.append("imageFile", image);
     updatedProduct.append(
-      "product",
+      "productDTO",
       new Blob([JSON.stringify(updateProduct)], { type: "application/json" })
     );
   
 
   console.log("formData : ", updatedProduct)
     axios
-      .put(`http://localhost:8080/api/product/${id}`, updatedProduct, {
+      .put(`http://localhost:8080/api/products/${id}`, updatedProduct, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -136,13 +136,28 @@ const UpdateProduct = () => {
             <input
               type="text"
               className="form-control"
-              placeholder={product.description}
-              name="description"
+              placeholder={product.desc}
+              name="desc"
               onChange={handleChange}
-              value={updateProduct.description}
-              id="description"
+              value={updateProduct.desc}
+              id="desc"
             />
           </div>
+          
+          <div className="col-5">
+            <label className="form-label">
+              <h6>Release Date</h6>
+            </label>
+            <input
+              type="date"
+              className="form-control"
+              name="releaseDate"
+              value={updateProduct.releaseDate}
+              onChange={handleChange}
+              id="releaseDate"
+            />
+          </div>
+
           <div className="col-5">
             <label className="form-label">
               <h6>Price</h6>
@@ -161,6 +176,7 @@ const UpdateProduct = () => {
             <label className="form-label">
               <h6>Category</h6>
             </label>
+            
             <select
               className="form-select"
               value={updateProduct.category}
@@ -186,10 +202,10 @@ const UpdateProduct = () => {
               type="number"
               className="form-control"
               onChange={handleChange}
-              placeholder={product.stockQuantity}
-              value={updateProduct.stockQuantity}
-              name="stockQuantity"
-              id="stockQuantity"
+              placeholder={product.quantity}
+              value={updateProduct.quantity}
+              name="quantity"
+              id="quantity"
             />
           </div>
           <div className="col-md-8">
@@ -221,11 +237,11 @@ const UpdateProduct = () => {
               <input
                 className="form-check-input"
                 type="checkbox"
-                name="productAvailable"
+                name="isAvailable"
                 id="gridCheck"
-                checked={updateProduct.productAvailable}
+                checked={updateProduct.isAvailable}
                 onChange={(e) =>
-                  setUpdateProduct({ ...updateProduct, productAvailable: e.target.checked })
+                  setUpdateProduct({ ...updateProduct, isAvailable: e.target.checked })
                 }
               />
               <label className="form-check-label">Product Available</label>

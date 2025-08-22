@@ -7,14 +7,14 @@ import '../assets/css/Home.css'; // Import the CSS file
 
 // Memoized Product Card component for performance
 const ProductCard = React.memo(({ product, addToCart }) => {
-  const { id, brand, name, price, available, imageUrl } = product;
+  const { id, brand, name, price, isAvailable, imageUrl } = product;
 
   // Conditionally apply a class based on product availability
-  const cardClassName = `card-item ${!available ? 'out-of-stock' : ''}`;
+  const cardClassName = `card-item ${!isAvailable ? 'out-of-stock' : ''}`;
 
   return (
     <div className={cardClassName} key={id}>
-      <Link to={`/product/${id}`} className="card-link">
+      <Link to={`/products/${id}`} className="card-link">
         <img
           src={imageUrl}
           alt={name}
@@ -43,9 +43,9 @@ const ProductCard = React.memo(({ product, addToCart }) => {
               e.preventDefault();
               addToCart(product);
             }}
-            disabled={!available}
+            disabled={!isAvailable}
           >
-            {available ? "Add to Cart" : "Out of Stock"}
+            {isAvailable ? "Add to Cart" : "Out of Stock"}
           </button>
         </div>
       </Link>
@@ -62,18 +62,19 @@ const Home = ({ selectedCategory }) => {
 
   // Use useCallback to memoize the data fetching and image processing function
   const fetchDataAndImages = useCallback(async () => {
-    if (!data || data.length === 0) {
+    if (!data.data || data.data.length === 0) {
       return; // Await initial data from context
     }
-    
+    let products = data.data;    
     const updatedProducts = await Promise.all(
-      data.map(async (product) => {
+      products.map(async (product) => {
         try {
           const response = await axios.get(
-            `/product/${product.id}/image`,
+            `/products/${product.id}/image`,
             { responseType: "blob" }
           );
           const imageUrl = URL.createObjectURL(response.data);
+          console.log(imageUrl);
           return { ...product, imageUrl };
         } catch (error) {
           console.error("Error fetching image for product ID:", product.id, error);
@@ -110,9 +111,9 @@ const Home = ({ selectedCategory }) => {
 
   // Combined filter logic for category and availability
   const filteredProducts = products.filter((product) => {
-    const matchesCategory = selectedCategory ? product.category === selectedCategory : true;
-    const matchesAvailability = showOnlyAvailableProducts ? product.available : true;
-    return matchesCategory && matchesAvailability;
+    const matchesAvailability = showOnlyAvailableProducts ? product.isAvailable : true;
+    // return matchesCategory && matchesAvailability;
+    return matchesAvailability;
   });
 
   if (isError) {
@@ -137,7 +138,7 @@ const Home = ({ selectedCategory }) => {
       <div className="products-grid">
         {filteredProducts.length === 0 ? (
           <h2 className="no-products-message">
-            {showOnlyAvailableProducts && products.some(p => p.available) ? 
+            {showOnlyAvailableProducts && products.some(p => p.isAvailable) ? 
               "No available products in this category." : 
               "No Products Available"
             }

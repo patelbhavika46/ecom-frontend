@@ -23,8 +23,8 @@ const Navbar = ({ onSelectCategory, onSearch }) => {
   const fetchData = async (value) => {
     try {
       const response = await axios.get("http://localhost:8080/api/products");
-      setSearchResults(response.data);
-      console.log(response.data);
+      setSearchResults(response.data.data);
+      console.log(response.data.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -38,9 +38,11 @@ const Navbar = ({ onSelectCategory, onSearch }) => {
       const response = await axios.get(
         `http://localhost:8080/api/products/search?keyword=${value}`
       );
-      setSearchResults(response.data);
-      setNoResults(response.data.length === 0);
-      console.log(response.data);
+      
+      let products = response.data.data;
+      setSearchResults(products);
+      setNoResults(products.length === 0);
+      console.log(products);
     } catch (error) {
       console.error("Error searching:", error);
     }
@@ -107,9 +109,6 @@ const Navbar = ({ onSelectCategory, onSearch }) => {
       <header>
         <nav className="navbar navbar-expand-lg fixed-top">
           <div className="container-fluid">
-            <a className="navbar-brand" href="https://telusko.com/">
-              Telusko
-            </a>
             <button
               className="navbar-toggler"
               type="button"
@@ -196,7 +195,7 @@ const Navbar = ({ onSelectCategory, onSearch }) => {
                     {searchResults.length > 0 ? (  
                         searchResults.map((result) => (
                           <li key={result.id} className="list-group-item">
-                            <a href={`/product/${result.id}`} className="search-result-link">
+                            <a href={`/products/${result.id}`} className="search-result-link">
                             <span>{result.name}</span>
                             </a>
                           </li>

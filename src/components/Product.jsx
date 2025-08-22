@@ -14,13 +14,14 @@ const Product = () => {
   // Function to fetch product details and its image
   const fetchProductDetails = useCallback(async () => {
     try {
-      const productResponse = await axios.get(`/product/${id}`);
-      setProduct(productResponse.data);
-
-      if (productResponse.data.imageName) {
+      const productResponse = await axios.get(`/products/${id}`);
+      let product = productResponse.data.data;
+      setProduct(product);
+console.log(product);
+      if (product.imageName) {
         try {
           const imageResponse = await axios.get(
-            `/product/${id}/image`,
+            `/products/${id}/image`,
             { responseType: "blob" }
           );
           // Create object URL for the image blob
@@ -44,21 +45,22 @@ const Product = () => {
 
   useEffect(() => {
     fetchProductDetails();
+  }, [fetchProductDetails]);
 
-    // Cleanup function to revoke the object URL when component unmounts or image changes
+  useEffect(() => {
     return () => {
       if (imageUrl && imageUrl.startsWith("blob:")) {
         URL.revokeObjectURL(imageUrl);
       }
     };
-  }, [fetchProductDetails, imageUrl]); // Depend on fetchProductDetails and imageUrl for cleanup
+  }, [imageUrl]);
 
   // Handles product deletion
   const handleDeleteProduct = async () => {
     // In a real application, you'd add a confirmation modal here instead of `alert`
     if (window.confirm("Are you sure you want to delete this product?")) { // Using confirm for demo purposes
       try {
-        await axios.delete(`/product/${id}`);
+        await axios.delete(`/products/${id}`);
         removeFromCart(id); // Remove from cart context
         refreshData(); // Refresh global product data
         navigate("/"); // Navigate back to the home page
@@ -71,7 +73,7 @@ const Product = () => {
 
   // Handles navigation to the update product page
   const handleEditClick = () => {
-    navigate(`/product/update/${id}`);
+    navigate(`/products/update/${id}`);
   };
 
   // Handles adding the product to the cart
@@ -93,8 +95,7 @@ const Product = () => {
   }
 
   // Destructure product properties for cleaner JSX
-  const { name, brand, category, desc, price, available, quantity, releaseDate } = product;
-  const formattedReleaseDate = new Date(releaseDate).toLocaleDateString();
+  const { name, brand, category, desc, price, isAvailable, quantity, releaseDate } = product;
 
   return (
     <div className="product-container">
@@ -110,7 +111,7 @@ const Product = () => {
             {category}
           </span>
           <p className="product-release-date">
-            <h6>Listed : <span><i>{formattedReleaseDate}</i></span></h6>
+            <h6>Listed : <span><i>{releaseDate}</i></span></h6>
           </p>
         </div>
         
@@ -125,12 +126,13 @@ const Product = () => {
           <span className="product-price-value">
             {"$" + price}
           </span>
+          {isAvailable}
           <button
-            className={`add-to-cart-btn ${!available ? "disabled-btn" : ""}`}
+            className={`add-to-cart-btn ${!isAvailable ? "disabled-btn" : ""}`}
             onClick={handleAddToCart}
-            disabled={!available}
+            disabled={!isAvailable}
           >
-            {available ? "Add to cart" : "Out of Stock"}
+            {isAvailable ? "Add to cart" : "Out of Stock"}
           </button>
           <h6 className="product-stock-quantity">
             Stock Available :{" "}

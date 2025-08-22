@@ -5,12 +5,12 @@ const AddProduct = () => {
   const [product, setProduct] = useState({
     name: "",
     brand: "",
-    description: "",
+    desc: "",
     price: "",
     category: "",
     quantity: "",
     releaseDate: "",
-    productAvailable: false,
+    isAvailable: false,
   });
   const [image, setImage] = useState(null);
 
@@ -29,12 +29,12 @@ const AddProduct = () => {
     const formData = new FormData();
     formData.append("imageFile", image);
     formData.append(
-      "product",
+      "productDTO",
       new Blob([JSON.stringify(product)], { type: "application/json" })
     );
 
     axios
-      .post("http://localhost:8080/api/product", formData, {
+      .post("http://localhost:8080/api/products", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -88,8 +88,8 @@ const AddProduct = () => {
             type="text"
             className="form-control"
             placeholder="Add product description"
-            value={product.description}
-            name="description"
+            value={product.desc}
+            name="desc"
             onChange={handleInputChange}
             id="description"
           />
@@ -175,11 +175,11 @@ const AddProduct = () => {
             <input
               className="form-check-input"
               type="checkbox"
-              name="productAvailable"
+              name="isAvailable"
               id="gridCheck"
-              checked={product.productAvailable}
+              checked={product.isAvailable}
               onChange={(e) =>
-                setProduct({ ...product, productAvailable: e.target.checked })
+                setProduct({ ...product, isAvailable: e.target.checked })
               }
             />
             <label className="form-check-label">Product Available</label>
